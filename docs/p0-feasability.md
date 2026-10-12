@@ -17,3 +17,15 @@ How has the annual frequency and total reported damage for the top hazard change
 How does a state’s reported loss (per-capita) for a given hazard compare with a set of peer states?
 
 #### 4. Source identification and access
+
+Source data name and provider: Severe Storm Event Details | NOAA
+
+Source URL: https://console.cloud.google.com/marketplace/product/noaa-public/severe-storm-events
+
+Project and dataset: bigquery-public-data | noaa_historic_severe_storms
+
+Candidate tables and location: storms_2015, storms_2016, storms_2017, storms_2018, storms_2019, storms_2020, storms_2021, storms_2022, storms_2023, storms_2024, storms_2025 | US
+
+Source approval and accessibility: Confirmed
+
+Terms of service: This dataset is publicly available for anyone to use with no restrictions and is provided "AS IS" without any warranty, express or implied, from Google. Google disclaims all liability for any damages, direct or indirect, resulting from the use of the dataset.
