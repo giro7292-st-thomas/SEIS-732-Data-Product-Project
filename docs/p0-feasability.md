@@ -1,5 +1,7 @@
 #### 1. Working title
 
+Storm Risks for State Hazard Mitigation Planners
+
 #### 2. Audience and need
 
 This project is targeted for hazard mitigation planners at state emergency management agencies who develop and maintain mitigations plans by deciding which hazards to prioritize for mitigation funding. A data product that summarizes event frequency, injuries, and damage done by storms over a recent 10-year window can help to accurately prioritize hazards which in turn might be used to target grant applications and apply funding towards the most frequent/deadly types of storms occuring in that state.
