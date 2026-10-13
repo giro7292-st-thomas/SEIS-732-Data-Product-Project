@@ -64,5 +64,17 @@ Refresh interval: Per the source, data about a specific event is added to the da
 |---|---|---|---|---|---|
 | **Q1** | Which hazard types account for the largest share of deaths, injuries, and property and crop damage in each state over the last 10 years? | Yearly storm tables and `event_type`, `state`, `event_begin_time`, `deaths_direct`, `deaths_indirect`, `injuries_direct`, `injuries_indirect`, `damage_property`, `damage_crops` | `bigquery-public-data.noaa_historic_severe_storms.storms_*` (2016-2025, 968,709 rows) | All of the data is in one dataset. Reviewing the data shows full coverage, no null `event_id`s, and no rows in the wrong year table. Hazard, state, impact, and date fields are all on each row. | `event_id`s are duplicated, so test whether impact fields are repeated before summing.|
 | **Q2** | How has the annual frequency and total damage of the top hazard changed from the first half to the later half of the window? | Same fields as Q1, plus year calculated from `event_begin_time`. A definition of top hazard, a defined event count, and a split point between the two halves. | `storms_` tables, using the year tables or the date column to group by year. | The table has one row set per year, no year is empty, and every year has the fields needed to compute annual counts and damage. | Frequency has no direct field: rows are not events, because of `event_id` duplicates a counting rule will need to be identified and tested. |
-| **Q3** | How does a state's per-capita loss for a given hazard compare with peer states? | Everything from Q1 for loss by state and hazard, as well as a population number per state and year, a definition of loss, and a definition of peer states. | `storms_` tables for the numerator. The denominator isn't in this NOAA dataset, so bring in Census population estimates . | The numerator can be built from the same source as Q1. Only the population side needs something new. | Population data has to be found, approved, and checked for coverage of 2015-2025, which is a new source for the project.|
+| **Q3** | How does a state's per-capita loss for a given hazard compare with peer states? | Everything from Q1 for loss by state and hazard, as well as a population number per state and year, a definition of loss, and a definition of peer states. | `storms_` tables for storm information. The state's populations are not in this NOAA dataset, so bring in Census population estimates. | The numerator can be built from the same source as Q1. Only the population needs something new. | Population data has to be found, approved, and checked for coverage of 2015-2025, which is a new source for the project.|
+
+#### 7. Feasibility risks and response
+
+##### A product idea that is too broad for the course timeline
+
+##### Insufficient grain, identifiers, date coverage, or descriptive context
+
+#### 8. First P1 decision
+
+#### 9. AI/tool accountability
+
+AI was used to generate a variety of queries for exploring the data after the three proposed questions were drafted. Additionally, AI assisted with Markdown syntax, GitHub navigation, and version control processes.
 
