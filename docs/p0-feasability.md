@@ -69,10 +69,13 @@ Refresh interval: Per the source, data about a specific event is added to the da
 #### 7. Feasibility risks and response
 
 ##### A product idea that is too broad for the course timeline
+The evidence that I currently have has clearly defined attributes for quantifying damage and injuries. The duplication of `event_id`s will require additional research and be the primary issue to resolve in P1. After better understanding the dataset, if the scope is too broad, the fallback option will be to eliminate Q3 and focus on Q1 and Q2. Additionally scope modification can be accomplished by reducing the national analysis to a 2-state comparison (MN vs. WI).
 
 ##### Insufficient grain, identifiers, date coverage, or descriptive context
+Date coverage is solid, identifiers are weak, and grain is not simply one row per storm resulting in the potential for counting damage multiple times for a single storm. I will check whether damage is repeated across rows of the same `event_id` by comparing summed damage with the maximum single-row damage. Further, if the state values are messy, try to build a small mapping before computing any per-state share. The fallback is narrow the scope after defining the de-duplicating rule and limiting Q1 to direct deaths and direct property damage for the time frame.
 
 #### 8. First P1 decision
+Find out what a repeated `event_id` represents; the de-duplicating rule will be determined once this is well understood.
 
 #### 9. AI/tool accountability
 
