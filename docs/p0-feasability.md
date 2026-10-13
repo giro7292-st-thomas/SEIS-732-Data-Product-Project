@@ -29,3 +29,22 @@ Candidate tables and location: storms_2015, storms_2016, storms_2017, storms_201
 Source approval and accessibility: Confirmed
 
 Terms of service: This dataset is publicly available for anyone to use with no restrictions and is provided "AS IS" without any warranty, express or implied, from Google. Google disclaims all liability for any damages, direct or indirect, resulting from the use of the dataset.
+
+#### 5. Quick source profile
+
+One row equals one event record for one event type in one county over a time span.
+
+Table	        Row Count
+storms_2015 	87155
+storms_2016 	77291
+storms_2017 	81655
+storms_2018 	97931
+storms_2019 	102613
+storms_2020 	85232
+storms_2021 	83083
+storms_2022 	83338
+storms_2023 	91312
+storms_2024 	85896
+storms_2025 	93203
+
+
