@@ -34,17 +34,18 @@ Terms of service: This dataset is publicly available for anyone to use with no r
 
 One row equals one event record for one event type in one county over a time span.
 
-Table	        Row Count
-storms_2015 	87155
-storms_2016 	77291
-storms_2017 	81655
-storms_2018 	97931
-storms_2019 	102613
-storms_2020 	85232
-storms_2021 	83083
-storms_2022 	83338
-storms_2023 	91312
-storms_2024 	85896
-storms_2025 	93203
+| Table | Row Count |
+|---|---:|
+| storms_2015 | 87,155 |
+| storms_2016 | 77,291 |
+| storms_2017 | 81,655 |
+| storms_2018 | 97,931 |
+| storms_2019 | 102,613 |
+| storms_2020 | 85,232 |
+| storms_2021 | 83,083 |
+| storms_2022 | 83,338 |
+| storms_2023 | 91,312 |
+| storms_2024 | 85,896 |
+| storms_2025 | 93,203 |
 
 
