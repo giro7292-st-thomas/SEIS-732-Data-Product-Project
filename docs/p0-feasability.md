@@ -32,8 +32,9 @@ Terms of service: This dataset is publicly available for anyone to use with no r
 
 #### 5. Quick source profile
 
-One row equals one event record for one event type in one county over a time span.
+Grain: One row equals one event record for one event type in one county over a time span.
 
+Row Count:
 | Table | Row Count |
 |---|---:|
 | storms_2015 | 87,155 |
@@ -48,4 +49,9 @@ One row equals one event record for one event type in one county over a time spa
 | storms_2024 | 85,896 |
 | storms_2025 | 93,203 |
 
+Date Coverage: 2015-01-01T00:00:00 to 2025-12-31T23:59:00
+
+Possible IDs or keys: event_id is the event key, episode_id appears to group related events. There are duplicate event_ids and episode_ids.
+
+Fields likely to support the proposed questions:
 
