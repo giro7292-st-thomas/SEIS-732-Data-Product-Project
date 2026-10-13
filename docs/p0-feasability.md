@@ -75,6 +75,9 @@ The evidence that I currently have has clearly defined attributes for quantifyin
 Date coverage is solid, identifiers are weak, and grain is not simply one row per storm resulting in the potential for counting damage multiple times for a single storm. I will check whether damage is repeated across rows of the same `event_id` by comparing summed damage with the maximum single-row damage. Further, if the state values are messy, try to build a small mapping before computing any per-state share. The fallback is narrow the scope after defining the de-duplicating rule and limiting Q1 to direct deaths and direct property damage for the time frame.
 
 #### 8. First P1 decision
+
+##### Define the exact grain.
+
 Find out what a repeated `event_id` represents; the de-duplicating rule will be determined once this is well understood.
 
 #### 9. AI/tool accountability
