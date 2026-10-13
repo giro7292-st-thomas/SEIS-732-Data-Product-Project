@@ -51,7 +51,10 @@ Row Count:
 
 Date Coverage: 2015-01-01T00:00:00 to 2025-12-31T23:59:00
 
-Possible IDs or keys: event_id is the event key, episode_id appears to group related events. There are duplicate event_ids and episode_ids.
+Possible IDs or keys: event_id is the event key, episode_id appears to group related events. 
 
-Fields likely to support the proposed questions:
+Fields likely to support the proposed questions: event_type, state, event_begin_time, injuries_direct, injuries_indirect, deaths_direct, deaths_indirect, damage_property, damage_crops, source
 
+Important null, duplicate, type, or semi-structured characteristics: There are duplicate event_ids and episode_ids.
+
+Refresh interval: Per the source, data about a specific event is added to the dataset within 120 days to allow time for damage assessments and other analysis.
