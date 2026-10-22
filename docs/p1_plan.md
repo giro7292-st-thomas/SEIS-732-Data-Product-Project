@@ -30,6 +30,7 @@ Fact-table Type: Transaction fact table. Each row is one recorded event, and eve
 
 Grain: One row represents one NOAA-reported storm event; a single event type in a single forecast zone, starting at a single time, identified by NOAA's event_id.
 
+```mermaid
 erDiagram
     DIM_DATE ||--o{ FCT_STORM_EVENT : "event begin date"
     DIM_HAZARD ||--o{ FCT_STORM_EVENT : "hazard"
@@ -73,7 +74,7 @@ erDiagram
         string window_half "2016-2020 or 2021-2025"
         int    month
     }
-
+```mermaid
 
 #### 3. Plan the build and its checks
 
