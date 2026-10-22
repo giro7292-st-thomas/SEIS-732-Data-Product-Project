@@ -74,7 +74,7 @@ erDiagram
         string window_half "2016-2020 or 2021-2025"
         int    month
     }
-```mermaid
+```
 
 #### 3. Plan the build and its checks
 
