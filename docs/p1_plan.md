@@ -24,6 +24,12 @@ Row Count:
 
 #### 2. Define the model and predict a history consequence
 
+Business Process: NOAA's recording of severe storm events and their reported human and economic impacts.
+
+Fact-table Type: Transaction fact table. Each row is one recorded event, and every measure is additive across hazard, place, and time.
+
+Grain: One row represents one NOAA-reported storm event; a single event type in a single forecast zone, starting at a single time, identified by NOAA's event_id.
+
 #### 3. Plan the build and its checks
 
 #### 4. Diagnose and revise the plan
