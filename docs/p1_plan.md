@@ -27,7 +27,7 @@ Source Size and Date Coverage:
 | 2025 | 93,203 | 2025-01-01 00:00 | 2025-12-31 23:40 | 18.4 |
 | **All years** | **881,554** | **2016-01-01 00:00** | **2025-12-31 23:40** | **179.8** |
 
-Candidate Identifiers: `event_id` combined with `location_index` uniquely identifies each source row. `event_id alone` will be the key once the data is deduplicated to one row per event. `state_fips_code` combined with `event_type` will be used as identifiers for the analysis output.
+Candidate Identifiers: `event_id` combined with `location_index` uniquely identifies each source row. `event_id'  will be the key once the data is deduplicated to one row per event. `state_fips_code` combined with `event_type` will be used as identifiers for the analysis output.
 
 Data Issue or Restriction: Deaths, injuries, and damage are repeated for events with multiple location rows. Summing these facts from the source table would be an artificial inflation. Deduplicating to one row per `event_id` before aggregating fixes this.
 
