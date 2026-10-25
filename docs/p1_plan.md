@@ -100,14 +100,22 @@ erDiagram
 
     DIM_HAZARD {
         int hazard_key PK "Warehouse surrogate key"
-        string hazard_type
-        string hazard_group "OPTIONAL: My own grouping interpretation, ex: heavy snow and lake-effect snow"
+        string event_type
+        string event_group "OPTIONAL: My own grouping interpretation, ex: heavy snow and lake-effect snow"
     }
 ```
 
 Tracing Modelling Question:
 
-The primary question I am analyzing asks which hazard types account for the most deaths, injuries, and damage (property and crop) in each state from 2016 to 2025. The `FACT_STORM_EVENT` helps to answer this as each row is one storm event with the impacts counted only once so the measures related to deaths, injuries, and damage can be summed. The fact table is joined to `DIM_DATE` via the event start date, where a filter is applied for 2016 through 2025. It is also joined to `DIM_STATE` via the FIPS code, and joined to `DIM_HAZARD` which supplies information about the event through the `hazard_type` field. `hazard_group` is a potential method to group the events together for easier product consumption by reducing the amount of similar hazards to those that are related - this would be calculated via a CASE statement. In summary, each measure is summed by state and hazard type which will then be ranked to determine which is responsible for the largest quantity of deaths, injuries, and damage.
+The primary question I am analyzing asks which hazard types account for the most deaths, injuries, and damage (property and crop) in each state from 2016 to 2025. The `FACT_STORM_EVENT` helps to answer this as each row is one storm event with the impacts counted only once so the measures related to deaths, injuries, and damage can be summed. The fact table is joined to `DIM_DATE` via the event start date, where a filter is applied for 2016 through 2025. It is also joined to `DIM_STATE` via the FIPS code, and joined to `DIM_HAZARD` which supplies information about the event through the `event_type` field. `event_group` is a potential method to group the events together for easier product consumption by reducing the amount of similar hazards to those that are related - this would be calculated via a CASE statement. In summary, each measure is summed by state and hazard type which will then be ranked to determine which is responsible for the largest quantity of deaths, injuries, and damage.
+
+History Decision:
+`event_type` is the attribute that is most likely to change (or be reclassified); NOAA may change spelling or naming overtime as climate change shifts standard hazard behaviors and classifications. This is where the `event_group` attribute would be used and treated as Type 1. For example, if `lake-effect snow` changed to `lake effect snow', it would be overwritten using the SQL:
+
+CASE
+  WHEN LOWER(TRIM(event_type)) IN ('lake-effect snow', 'lake effect snow') THEN 'Snow'
+  ELSE INITCAP(event_type)
+END AS event_group
 
 #### 3. Plan the build and its checks
 
