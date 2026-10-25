@@ -114,10 +114,12 @@ History Decision:
 
 The small behavior I can test by P3 is applying hazard groupings to the list of hazards, and document which values are grouped into a new hazard type.
 
+```
 CASE
   WHEN LOWER(TRIM(event_type)) IN ('lake-effect snow', 'lake effect snow') THEN 'Snow'
   ELSE INITCAP(event_type)
 END AS event_group
+```
 
 #### 3. Plan the build and its checks
 
