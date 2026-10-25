@@ -79,8 +79,20 @@ FROM (
 );
 
 -- Check 8: Fact rows match distinct source events
+-- Confirms the fact grain: one row per event_id. Both numbers should equal 653,920.
+WITH src AS (
+  SELECT *
+  FROM `bigquery-public-data.noaa_historic_severe_storms.storms_*`
+  WHERE _TABLE_SUFFIX BETWEEN '2016' AND '2025'
+),
+fact AS (
+  SELECT * EXCEPT(rn)
+  FROM (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY event_id ORDER BY location_index) AS rn
+    FROM src
+  )
+  WHERE rn = 1
+)
 SELECT
-  COUNT(DISTINCT event_id) AS distinct_source_events,
-  COUNT(DISTINCT TO_JSON_STRING(STRUCT(event_id))) AS fact_rows
-FROM `bigquery-public-data.noaa_historic_severe_storms.storms_*`
-WHERE _TABLE_SUFFIX BETWEEN '2016' AND '2025';
+  (SELECT COUNT(DISTINCT event_id) FROM src) AS distinct_source_events,
+  (SELECT COUNT(*) FROM fact) AS fact_rows;
