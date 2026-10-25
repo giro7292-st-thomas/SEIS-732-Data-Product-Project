@@ -75,9 +75,8 @@ erDiagram
         int date_key FK "YYYYMMDD of event begin date"
         string state_key FK "State FIPS code"
         int hazard_key FK "Warehouse surrogate key"
-        string source_event_type "NOAA label"
         string cz_type "C county, Z zone, or M marine"
-        string cz_fips_code "County or zone code, as recorded"
+        string cz_fips_code "County or zone code"
         int deaths_direct "Additive measure"
         int deaths_indirect "Additive measure"
         int injuries_direct "Additive measure"
@@ -89,28 +88,21 @@ erDiagram
     DIM_DATE {
         int date_key PK "YYYYMMDD"
         date full_date
-        int year "Filter 2016 to 2025"
+        int year
         int quarter
         int month
     }
 
     DIM_STATE {
         string state_key PK "State FIPS"
-        string state_name "From Census FIPS lookup"
+        string state_name "Requires FIPS lookup"
         string state_abbr
-        boolean is_analysis_state "True for 50 states plus DC"
     }
 
     DIM_HAZARD {
-        int hazard_key PK "Warehouse surrogate key; Type 1"
-        string hazard_name "Hazard label"
-        string hazard_group "Grouping"
-    }
-
-    HAZARD_MAP {
-        string source_event_type PK "Normalized NOAA label"
-        int hazard_key FK "Exactly one hazard per label"
-        string mapping_version "Records which mapping produced results"
+        int hazard_key PK "Warehouse surrogate key"
+        string hazard_type
+        string hazard_group "My own grouping interpretation, ex: heavy snow and lake-effect snow"
     }
 ```
 
