@@ -112,6 +112,8 @@ The primary question I am analyzing asks which hazard types account for the most
 History Decision:
 `event_type` is the attribute that is most likely to change (or be reclassified); NOAA may change spelling, naming, split a hazard into two type, or group hazards together overtime as climate change shifts standard hazard behaviors and classifications. This is where the `event_group` attribute would be used and treated as Type 1. For example, if `lake-effect snow` changed to `lake effect snow', it would be overwritten using the SQL below. Treating this as Type 1 can have a direct impact on the primary analytical question by changing the hazard ranking; adding a new heat-related hazard could potentially group it with other heat-related hazards, combining deaths that would have previously been split across different labels, thus moving `Heat`'s ranking higher. I've decided on Type 1 as each year should be classified under the current definitions; each year added to the analysis would need to have unique values checked, grouped as needed, and have the grouping changes documented in the procedures.
 
+The small behavior I can test by P3 is applying hazard groupings to the list of hazards, and document which values are grouped into a new hazard type.
+
 CASE
   WHEN LOWER(TRIM(event_type)) IN ('lake-effect snow', 'lake effect snow') THEN 'Snow'
   ELSE INITCAP(event_type)
