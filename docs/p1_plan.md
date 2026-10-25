@@ -29,7 +29,28 @@ Source Size and Date Coverage:
 
 Candidate Identifiers: `event_id` combined with `location_index` uniquely identifies each source row. `event_id'  will be the key once the data is deduplicated to one row per event. `state_fips_code` combined with `event_type` will be used as identifiers for the analysis output.
 
-Data Issue or Restriction: Deaths, injuries, and damage are repeated for events with multiple location rows. Summing these facts from the source table would be an artificial inflation. Deduplicating to one row per `event_id` before aggregating fixes this.
+Data Issue or Restriction: Deaths, injuries, and damage are repeated for events with multiple location rows. Summing these facts from the source table would be an artificial inflation. Deduplicating to one row per `event_id` before aggregating fixes this. Also, `state` is ambiguous ("Ar" could be Arizona or Arkansas), so `state_fips_code` is used as the state key.
+
+Focused Source Profile:
+| Year | Source rows | Fact rows | Rows removed |
+|:-----|------------:|----------:|-------------:|
+| 2016 | 77,291 | 56,005 | 21,286 |
+| 2017 | 81,655 | 57,041 | 24,614 |
+| 2018 | 97,931 | 62,699 | 35,232 |
+| 2019 | 102,613 | 67,864 | 34,749 |
+| 2020 | 85,232 | 61,281 | 23,951 |
+| 2021 | 83,083 | 61,389 | 21,694 |
+| 2022 | 83,338 | 69,887 | 13,451 |
+| 2023 | 91,312 | 75,593 | 15,719 |
+| 2024 | 85,896 | 69,801 | 16,095 |
+| 2025 | 93,203 | 72,360 | 20,843 |
+| **All years** | **881,554** | **653,920** | **227,634** |
+
+Conclusion:
+
+The fact grain is one row per storm event, identified by `event_id`; one hazard type in one county, forecast zone, or marine zone within one state, with its deaths, injuries, and damage recorded once.
+
+The source tables are stored with one row per location point, so the fact is built with a selection rule that keeps one row per `event_id`. The fact grain is confirmed by Check 7, showing the fact contains 653,920 rows that matches the 653,920 distinct events of the source. Since casualties and damage are recorded to the hazard and county where they happened, summing fact rows by `state_fips_code` and `event_type` will result in each state's impact by hazard type while avoiding duplicate counting across counties, states, or hazard types.
 
 #### 2. Define the model and predict a history consequence
 
