@@ -4,23 +4,32 @@ Audience and Need: This project is targeted for hazard mitigation planners at st
 
 Primary Question: Which hazard types account for the largest share of reported deaths and injuries, and the largest share of property and crop damage, in each state over the last 10 years?
 
+P0 Changes: I am dropping Q3, 'How does a state’s reported loss (per-capita) for a given hazard compare with a set of peer states?', per feedback, and focusing on Q1 (above).
+
 Source objects project and dataset: bigquery-public-data | noaa_historic_severe_storms
 
 Candidate tables and location: storms_2016, storms_2017, storms_2018, storms_2019, storms_2020, storms_2021, storms_2022, storms_2023, storms_2024, storms_2025 | US
 
-Row Count:
-| Table | Row Count |
-|---|---:|
-| storms_2016 | 77,291 |
-| storms_2017 | 81,655 |
-| storms_2018 | 97,931 |
-| storms_2019 | 102,613 |
-| storms_2020 | 85,232 |
-| storms_2021 | 83,083 |
-| storms_2022 | 83,338 |
-| storms_2023 | 91,312 |
-| storms_2024 | 85,896 |
-| storms_2025 | 93,203 |
+Source Row Meaning: Each source row is a location for one storm event. Events with a single location have one row, and events with several points repeat across several rows. The event’s details, deaths, injuries, and damage are copied into each of its rows, so they describe the whole event, not that specific point.
+
+Source Size and Date Coverage:
+| Year | Rows | First event | Last event | Size (MB) |
+|:-----|-----:|:------------|:-----------|----------:|
+| 2016 | 77,291 | 2016-01-01 00:00 | 2016-12-31 23:15 | 16.4 |
+| 2017 | 81,655 | 2017-01-01 00:00 | 2017-12-31 23:23 | 17.6 |
+| 2018 | 97,931 | 2018-01-01 00:00 | 2018-12-31 23:30 | 20.8 |
+| 2019 | 102,613 | 2019-01-01 00:00 | 2019-12-31 23:50 | 21.8 |
+| 2020 | 85,232 | 2020-01-01 00:00 | 2020-12-31 22:30 | 18.1 |
+| 2021 | 83,083 | 2021-01-01 00:00 | 2021-12-31 23:56 | 16.9 |
+| 2022 | 83,338 | 2022-01-01 00:00 | 2022-12-31 23:30 | 15.9 |
+| 2023 | 91,312 | 2023-01-01 00:00 | 2023-12-31 05:35 | 17.4 |
+| 2024 | 85,896 | 2024-01-01 00:00 | 2024-12-31 23:30 | 16.5 |
+| 2025 | 93,203 | 2025-01-01 00:00 | 2025-12-31 23:40 | 18.4 |
+| **All years** | **881,554** | **2016-01-01 00:00** | **2025-12-31 23:40** | **179.8** |
+
+Candidate Identifiers: `event_id` combined with `location_index` uniquely identifies each source row. `event_id alone` will be the key once the data is deduplicated to one row per event. `state_fips_code` combined with `event_type` will be used as identifiers for the analysis output.
+
+Data Issue or Restriction: Deaths, injuries, and damage are repeated for events with multiple location rows. Summing these facts from the source table would be an artificial inflation. Deduplicating to one row per `event_id` before aggregating fixes this.
 
 #### 2. Define the model and predict a history consequence
 
