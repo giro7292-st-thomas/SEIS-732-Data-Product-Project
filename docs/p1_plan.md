@@ -67,7 +67,6 @@ erDiagram
     DIM_DATE ||--o{ FACT_STORM_EVENT : "event begin date"
     DIM_STATE ||--o{ FACT_STORM_EVENT : "occurs in"
     DIM_HAZARD ||--o{ FACT_STORM_EVENT : "classified as"
-    DIM_HAZARD ||--|{ HAZARD_MAP : "mapped from"
 
     FACT_STORM_EVENT {
         string event_id PK "NOAA source ID; degenerate dimension"
