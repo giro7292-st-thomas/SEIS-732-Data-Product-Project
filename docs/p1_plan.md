@@ -54,55 +54,63 @@ The source tables are stored with one row per location point, so the fact is bui
 
 #### 2. Define the model and predict a history consequence
 
-Business Process: NOAA's recording of severe storm events and their reported human and economic impacts.
+Business Process: Storm event reporting from the NOAA where significant weather events are recorded along with the number of deaths, injuries, and damage that the event caused.
 
 Fact-table Type: Transaction fact table. Each row is one recorded event, and every measure is additive across hazard, place, and time.
 
-Grain: One row represents one NOAA-reported storm event; a single event type in a single forecast zone, starting at a single time, identified by NOAA's event_id.
+Fact-table Grain: One row represents one NOAA-reported storm event; a single event type in a single forecast zone, starting at a single time, identified by NOAA's event_id.
+
+Consequential Modelling Choice: By choosing event-grain, and not location-point grain, the storm event damage, injury, and death data can safely be added. The tradeoff is that location information is lost - if this information were to be used in GIS, tornado paths could not be correctly mapped. This decision is acceptable for the selected question that is working at a state-level scale.
 
 ```mermaid
 erDiagram
-    DIM_DATE ||--o{ FCT_STORM_EVENT : "event begin date"
-    DIM_HAZARD ||--o{ FCT_STORM_EVENT : "hazard"
-    DIM_LOCATION ||--o{ FCT_STORM_EVENT : "where"
+    DIM_DATE ||--o{ FACT_STORM_EVENT : "event begin date"
+    DIM_STATE ||--o{ FACT_STORM_EVENT : "occurs in"
+    DIM_HAZARD ||--o{ FACT_STORM_EVENT : "classified as"
+    DIM_HAZARD ||--|{ HAZARD_MAP : "mapped from"
 
-    FCT_STORM_EVENT {
-        int    event_begin_date_key FK
-        int    hazard_key FK
-        int    location_key FK
-        string event_id "degenerate dim, NOAA source ID, unique"
-        string episode_id "degenerate dim, groups related events"
-        int    event_count "always 1"
-        int    deaths_direct
-        int    deaths_indirect
-        int    injuries_direct
-        int    injuries_indirect
-        int    damage_property "USD"
-        int    damage_crops "USD"
-    }
-
-    DIM_HAZARD {
-        int    hazard_key PK "surrogate"
-        string event_type "NOAA natural key, fixed"
-        string hazard_group "planner category, Type 1"
-    }
-
-    DIM_LOCATION {
-        int    location_key PK "surrogate"
-        string state
-        string state_fips
-        string cz_type "C = county, Z = zone"
-        string cz_fips
-        string cz_name
-        bool   midwest_peer_flag
+    FACT_STORM_EVENT {
+        string event_id PK "NOAA source ID; degenerate dimension"
+        string episode_id "NOAA source ID; degenerate dimension"
+        int date_key FK "YYYYMMDD of event begin date"
+        string state_key FK "State FIPS code"
+        int hazard_key FK "Warehouse surrogate key"
+        string source_event_type "NOAA label"
+        string cz_type "C county, Z zone, or M marine"
+        string cz_fips_code "County or zone code, as recorded"
+        int deaths_direct "Additive measure"
+        int deaths_indirect "Additive measure"
+        int injuries_direct "Additive measure"
+        int injuries_indirect "Additive measure"
+        numeric damage_property "Additive measure, USD"
+        numeric damage_crops "Additive measure, USD"
     }
 
     DIM_DATE {
-        int    date_key PK "YYYYMMDD"
-        date   full_date
-        int    year
-        string window_half "2016-2020 or 2021-2025"
-        int    month
+        int date_key PK "YYYYMMDD"
+        date full_date
+        int year "Filter 2016 to 2025"
+        int quarter
+        int month
+    }
+
+    DIM_STATE {
+        string state_key PK "State FIPS"
+        string state_name "From Census FIPS lookup"
+        string state_abbr
+        boolean is_analysis_state "True for 50 states plus DC"
+    }
+
+    DIM_HAZARD {
+        int hazard_key PK "Warehouse surrogate key; Type 1"
+        string hazard_name "Hazard label"
+        string hazard_group "Grouping"
+    }
+
+    HAZARD_MAP {
+        string source_event_type PK "Normalized NOAA label"
+        int hazard_key FK "Exactly one hazard per label"
+        string mapping_version "Records which mapping produced results"
     }
 ```
 
