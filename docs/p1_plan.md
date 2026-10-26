@@ -133,6 +133,24 @@ Raw, Curated, and Serving objects:
 | Curated | `dim_hazard` | One row per distinct normalized `event_type`. |
 | Curated | `fact_storm_event` | Appliy the selection rule and adds `date_key`, `state_key`, and `hazard_key`, and keeps the casualty and damage measures. |
 | Serving | `srv_state_hazard_shares` | One row per state and `event_group`, with summed deaths, injuries, property damage, and crop damage, and its rank within the state. |
-| Serving | `srv_state_top_hazards` | The top hazard for each state and measure for the planner summary. |
+| Serving | `srv_state_top_hazards` | The top hazard for each state and measure for the hazard planner summary. |
+
+Preliminary Run Order:
+
+1. Create raw_storm_events view, check it returns 881,554 rows.
+2. Build dim_date, dim_state, and dim_hazard and confirm each key is unique and every source label maps to a hazard.
+3. Build fact_storm_event. Confirm it has 653,920 rows which matches distinct source events, no repeated event_id, and no keys missing from their dimensions.
+4. Build srv_state_hazard_shares. Check that shares add up to 100% within each state and measure.
+5. Build srv_state_top_hazards. Check there’s one row per state and measure - review ties if needed.
+
+Trace of One Measure: `deaths_direct`
+
+| Stage | Object | Form of `deaths_direct` | Transformation |
+|:------|:-------|:------------------------|:---------------|
+| Source | `storms_*` | Deaths for one event. Repeated for each of the location rows | None |
+| Raw | `raw_storm_events` | Same as source. | None |
+| Curated | `fact_storm_event` | Deaths counted once per event | Selection rule keeps one row per `event_id`.The event is linked to its state via FIPS, its hazard via the normalized label, and the date through the begin date |
+| Serving | `srv_state_hazard_shares` | Total deaths per state and hazard group | Filtered to 2016 to 2025, summed up by `state_key` and `event_group`, and divided by the state's total deaths. A rank is applied. |
+
 
 #### 4. Diagnose and revise the plan
