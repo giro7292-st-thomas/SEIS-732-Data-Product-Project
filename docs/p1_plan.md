@@ -123,4 +123,16 @@ END AS event_group
 
 #### 3. Plan the build and its checks
 
+Raw, Curated, and Serving objects:
+
+| Layer | Object | What it does |
+|:------|:-------|:-------------|
+| Raw | `raw_storm_events` | Reads `storms_2016` to `storms_2025` source tables through a `storms_*` wildcard with no changes. Keeps the source grain. |
+| Curated | `dim_date` | One row per calendar date, 2016 to 2025. |
+| Curated | `dim_state` | One row per state FIPS code, with name and abbreviation coming from the Census lookup. |
+| Curated | `dim_hazard` | One row per distinct normalized `event_type`. |
+| Curated | `fact_storm_event` | Appliy the selection rule and adds `date_key`, `state_key`, and `hazard_key`, and keeps the casualty and damage measures. |
+| Serving | `srv_state_hazard_shares` | One row per state and `event_group`, with summed deaths, injuries, property damage, and crop damage, and its rank within the state. |
+| Serving | `srv_state_top_hazards` | The top hazard for each state and measure for the planner summary. |
+
 #### 4. Diagnose and revise the plan
