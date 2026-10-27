@@ -27,7 +27,7 @@ Source Size and Date Coverage:
 | 2025 | 93,203 | 2025-01-01 00:00 | 2025-12-31 23:40 | 18.4 |
 | **All years** | **881,554** | **2016-01-01 00:00** | **2025-12-31 23:40** | **179.8** |
 
-Candidate Identifiers: `event_id` combined with `location_index` uniquely identifies each source row. `event_id'  will be the key once the data is deduplicated to one row per event. `state_fips_code` combined with `event_type` will be used as identifiers for the analysis output.
+Candidate Identifiers: `event_id` combined with `location_index` uniquely identifies each source row. `event_id'  will be the key once the data is deduplicated to one row per event. The output is grouped by `state_key` and `event_group` from the current hazard map row.
 
 Data Issue or Restriction: Deaths, injuries, and damage are repeated for events with multiple location rows. Summing these facts from the source table would be an artificial inflation. Deduplicating to one row per `event_id` before aggregating fixes this. Also, `state` is ambiguous ("Ar" could be Arizona or Arkansas), so `state_fips_code` is used as the state key.
 
@@ -57,13 +57,13 @@ Checks
 | 5 | Source rows missing `event_type` | 0 | 0 | The hazard label is fully populated. |
 | 6 | Repeated (`event_id`, `location_index`) groups | 0 | 0 | The source grain is one row per event location. |
 | 7 | Repeated `event_id` groups in source | > 0 | 83,379 | 83,379 events span multiple location rows, so a selection rule is needed before summing measures. |
-| 8 | Fact rows vs. distinct source events | 653,920 | 653,920 | The selection rule produces one row per `event_id`. |
+| 8 | Events whose measures or key attributes vary across location rows | 0 | 0 | The selection rule produces one row per `event_id`. |
 
 Conclusion:
 
 The fact grain is one row per storm event, identified by `event_id`; one hazard type in one county, forecast zone, or marine zone within one state, with its deaths, injuries, and damage recorded once.
 
-The source tables are stored with one row per location point, so the fact is built with a selection rule that keeps one row per `event_id`. The fact grain is confirmed by Check 8, showing the fact contains 653,920 rows that matches the 653,920 distinct events of the source. Since casualties and damage are recorded to the hazard and county where they happened, summing fact rows by `state_fips_code` and `event_type` will result in each state's impact by hazard type while avoiding duplicate counting across counties, states, or hazard types.
+The source tables are stored with one row per location point, so the fact is built with a selection rule that keeps one row per `event_id`. The fact grain is confirmed by Checks 7 and 8, showing the 83,379 multi row events contain the same numbers on each of the rows. Since casualties and damage are recorded to the hazard and county where they happened, summing fact rows by `state_key` and `event_group` will result in each state's impact by hazard type while avoiding duplicate counting across counties, states, or hazard types.
 
 #### 2. Define the model and predict a history consequence
 
@@ -116,20 +116,21 @@ erDiagram
         int map_key PK "Warehouse key; one version of a label's grouping"
         string event_type "Source key; can repeat across versions"
         string event_group "My own grouping, ex: heavy snow and lake-effect snow"
-        date valid_from "Compared to event begin date"
-        date valid_to
+        date valid_from "Version start date"
+        date valid_to "Version end date, Null if current"
         boolean is_current
     }
 ```
 
 Tracing Modelling Question:
 
-The primary question I am analyzing asks which hazard types account for the most deaths, injuries, and damage (property and crop) in each state from 2016 to 2025. The `FACT_STORM_EVENT` helps to answer this as each row is one storm event with the impacts counted only once so the measures related to deaths, injuries, and damage can be summed. The fact table is joined to `DIM_DATE` via the event start date, where a filter is applied for 2016 through 2025. It is also joined to `DIM_STATE` via the FIPS code, and joined to `DIM_HAZARD` which supplies information about the event through the `event_type` field. `event_group` is a potential method to group the events together for easier product consumption by reducing the amount of similar hazards to those that are related - this would be calculated via a CASE statement. In summary, each measure is summed by state and hazard type which will then be ranked to determine which is responsible for the largest quantity of deaths, injuries, and damage.
+The primary question I am analyzing asks which hazard types account for the most deaths, injuries, and damage (property and crop) in each state from 2016 to 2025. The `FACT_STORM_EVENT` helps to answer this as each row is one storm event with the impacts counted only once so the measures related to deaths, injuries, and damage can be summed. The fact table is joined to `DIM_DATE` via the event start date, where a filter is applied for 2016 through 2025. It is also joined to `DIM_STATE` via the FIPS code, and joined to `DIM_HAZARD` which supplies information about the event through the `event_type` field. `event_group` is a potential method to group the events together for easier product consumption by reducing the amount of similar hazards to those that are related - this is joined to `HAZARD_MAP` on the `event_type`. In summary, each measure is summed by state and hazard type which will then be ranked to determine which is responsible for the largest quantity of deaths, injuries, and damage.
 
 History Decision:
-`event_type` is the attribute that is most likely to change (or be reclassified); NOAA may change spelling, naming, split a hazard into two type, or group hazards together overtime as climate change shifts standard hazard behaviors and classifications. Instead of overwriting labels, each NOAA label is kept as recorded on the fact and a `hazard_map` lookup table assigns each label to an even group, which implements Type 2 history. The `event_type` is the source key, `map_key` is the warehouse key that identifies a verion of the label's grouping. If a label is changed, such as `lake-effect snow` becoming `lake effect snow`, a new row is added that maps the new label to the same group of `Snow`. If a label moves to a different grouping, the old row is closed via an end date and a new row is added to the new group with a start date. As far as impacts on the primary analytical question, a rename (keeping the label in the same group) will not have an effect. If a label is regrouped, such as `heat-related` moving to the `Heat` group, the deaths, injuries, and damage for all 10 years would join that group and potentially move the group ranking higher. The results will be reported using the current mapping
 
-The small behavior I can test by P3 confirming each event type label matches exactly one hazard mapping grouping (ex: `lake-effect snow' should not be mapped to `Snow` and `Winter Hazards`).
+`event_type` is the attribute that is most likely to change (or be reclassified); NOAA may change spelling, naming, split a hazard into two type, or group hazards together overtime as climate change shifts standard hazard behaviors and classifications. Instead of overwriting labels, each NOAA label is kept as recorded on the fact and a `hazard_map` lookup table assigns each label to an event group, which implements Type 2 history. The `event_type` is the source key, `map_key` is the warehouse key that identifies a verion of the label's grouping. If a label is changed, such as `lake-effect snow` becoming `lake effect snow`, a new row is added that maps the new label to the same group of `Snow`. If a label moves to a different grouping, the old row is closed via an end date and a new row is added to the new group with a start date. As far as impacts on the primary analytical question, a rename (keeping the label in the same group) will not have an effect. If a label is regrouped, such as `heat-related` moving to the `Heat` group, the deaths, injuries, and damage for all 10 years would join that group and potentially move the group ranking higher. The results will be reported using the current mapping
+
+The small behavior I can test by P3 confirming each event type label matches exactly one hazard mapping grouping `is_current` row (ex: `lake-effect snow' should not be mapped to `Snow` and `Winter Hazards`).
 
 #### 3. Plan the build and its checks
 
@@ -140,7 +141,7 @@ Raw, Curated, and Serving objects:
 | Raw | `raw_storm_events` | Reads `storms_2016` to `storms_2025` source tables through a `storms_*` wildcard with no changes. Keeps the source grain. |
 | Curated | `dim_date` | One row per calendar date, 2016 to 2025. |
 | Curated | `dim_state` | One row per state FIPS code, with name and abbreviation coming from the Census lookup. |
-| Curated | `dim_hazard` | One row per distinct normalized `event_type`. |
+| Curated | `hazard_map` | One row for a version of a label's grouping with one current row per label. |
 | Curated | `fact_storm_event` | Appliy the selection rule and adds `date_key`, `state_key`, and `hazard_key`, and keeps the casualty and damage measures. |
 | Serving | `srv_state_hazard_shares` | One row per state and `event_group`, with summed deaths, injuries, property damage, and crop damage, and its rank within the state. |
 | Serving | `srv_state_top_hazards` | The top hazard for each state and measure for the hazard planner summary. |
@@ -148,7 +149,7 @@ Raw, Curated, and Serving objects:
 Preliminary Run Order:
 
 1. Create raw_storm_events view, check it returns 881,554 rows.
-2. Build dim_date, dim_state, and dim_hazard and confirm each key is unique and every source label maps to a hazard.
+2. Build dim_date, dim_state, and hazard_map and confirm unique keys and every source label maps to a hazard exactly once.
 3. Build fact_storm_event. Confirm it has 653,920 rows which matches distinct source events, no repeated event_id, and no keys missing from their dimensions.
 4. Build srv_state_hazard_shares. Check that shares add up to 100% within each state and measure.
 5. Build srv_state_top_hazards. Check there’s one row per state and measure - review ties if needed.
@@ -165,7 +166,7 @@ Trace of One Measure: `deaths_direct`
 Project-Specific Risks:
 
 1. An event is lost or duplicated when the fact joins to the dimensions.
-    - Planned Check: count repeated event_ids, count fact rows where state_key, hazard_key, or date_key has no match in its dimension after creating the fact_storm_event table.
+    - Planned Check: count repeated event_ids, count fact rows where state_key, event_type, or date_key has no match in its dimension after creating the fact_storm_event table.
     - Expected results: 0 repeated IDs and 0 unmatched keys for each dimension
     - Where it will run: Within the curated layer after step 3 of the prelim run order.
   
@@ -178,7 +179,7 @@ Sensitivity of Traced Field: `deaths_direct` is public information and low-risk.
 
 Largest Remaining Limitation:
 
-`event_groups` are my own interpretation as NOAA does not provide any official groupings. These decisions may change which hazard ranks first in a state and will need to be documented.
+`event_group`s are my own interpretation as NOAA does not provide any official groupings. These decisions may change which hazard ranks first in a state and will need to be documented.
 
 First Concrete P2 Build Step:
 
@@ -195,6 +196,6 @@ FROM `peppy-castle-507918-u6.storm_risk_raw.raw_storm_events`;
 
 #### 4. Diagnose and revise the plan
 
-During the in class review, the concern of too many different storm types was brought up as many of the unique values sound similar. This is where the idea of storm grouping started, which should work well for testing out how to manage history.
+During the in class review, the concern of too many different storm types was brought up as many of the unique values sound similar. This is where the idea of storm grouping started, which should work well for testing out how to manage history. Additionally, we discussed strategies for discovering the source grain, as at the time it was unclear as to why events had multiple rows.
 
 AI Disclaimer: AI was used to write the SQL checks for the source profile, manage the syntax for GitHub formatting, and conversion/enhancement of the ER Diagram from what I described to a mermaid code block. GitHub syntax was verified by committing, reviewing the appearance, and adjusting as necessary. SQL checks were emulated in Excel as the dataset(s) are not too large to confirm quantities, null values, and unique values.
