@@ -114,16 +114,9 @@ Tracing Modelling Question:
 The primary question I am analyzing asks which hazard types account for the most deaths, injuries, and damage (property and crop) in each state from 2016 to 2025. The `FACT_STORM_EVENT` helps to answer this as each row is one storm event with the impacts counted only once so the measures related to deaths, injuries, and damage can be summed. The fact table is joined to `DIM_DATE` via the event start date, where a filter is applied for 2016 through 2025. It is also joined to `DIM_STATE` via the FIPS code, and joined to `DIM_HAZARD` which supplies information about the event through the `event_type` field. `event_group` is a potential method to group the events together for easier product consumption by reducing the amount of similar hazards to those that are related - this would be calculated via a CASE statement. In summary, each measure is summed by state and hazard type which will then be ranked to determine which is responsible for the largest quantity of deaths, injuries, and damage.
 
 History Decision:
-`event_type` is the attribute that is most likely to change (or be reclassified); NOAA may change spelling, naming, split a hazard into two type, or group hazards together overtime as climate change shifts standard hazard behaviors and classifications. This is where the `event_group` attribute would be used and treated as Type 1. For example, if `lake-effect snow` changed to `lake effect snow`, it would be overwritten using the SQL below. Treating this as Type 1 can have a direct impact on the primary analytical question by changing the hazard ranking; adding a new heat-related hazard could potentially group it with other heat-related hazards, combining deaths that would have previously been split across different labels, thus moving `Heat`'s ranking higher. I've decided on Type 1 as each year should be classified under the current definitions; each year added to the analysis would need to have unique values checked, grouped as needed, and have the grouping changes documented in the procedures.
+`event_type` is the attribute that is most likely to change (or be reclassified); NOAA may change spelling, naming, split a hazard into two type, or group hazards together overtime as climate change shifts standard hazard behaviors and classifications. Instead of overwriting labels, each NOAA label is kept as recorded on the fact and a `hazard_map` lookup table assigns each label to an even group, which implements Type 2 history. The `event_type` is the source key, `map_key` is the warehouse key that identifies a verion of the label's grouping. If a label is changed, such as `lake-effect snow` becoming `lake effect snow`, a new row is added that maps the new label to the same group of `Snow`. If a label moves to a different grouping, the old row is closed via an end date and a new row is added to the new group with a start date. As far as impacts on the primary analytical question, a rename (keeping the label in the same group) will not have an effect. If a label is regrouped, such as `heat-related` moving to the `Heat` group, the deaths, injuries, and damage for all 10 years would join that group and potentially move the group ranking higher. The results will be reported using the current mapping
 
-The small behavior I can test by P3 is applying hazard groupings to the list of hazards, and document which values are grouped into a new hazard type.
-
-```
-CASE
-  WHEN LOWER(TRIM(event_type)) IN ('lake-effect snow', 'lake effect snow') THEN 'Snow'
-  ELSE INITCAP(event_type)
-END AS event_group
-```
+The small behavior I can test by P3 confirming each event type label matches exactly one hazard mapping grouping (ex: `lake-effect snow' should not be mapped to `Snow` and `Winter Hazards`).
 
 #### 3. Plan the build and its checks
 
@@ -172,7 +165,7 @@ Sensitivity of Traced Field: `deaths_direct` is public information and low-risk.
 
 Largest Remaining Limitation:
 
-
+`event_groups` are my own interpretation as NOAA does not provide any official groupings. These decisions may change which hazard ranks first in a state and will need to be documented.
 
 First Concrete P2 Build Step:
 
