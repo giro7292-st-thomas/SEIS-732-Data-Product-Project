@@ -152,5 +152,17 @@ Trace of One Measure: `deaths_direct`
 | Curated | `fact_storm_event` | Deaths counted once per event | Selection rule keeps one row per `event_id`.The event is linked to its state via FIPS, its hazard via the normalized label, and the date through the begin date |
 | Serving | `srv_state_hazard_shares` | Total deaths per state and hazard group | Filtered to 2016 to 2025, summed up by `state_key` and `event_group`, and divided by the state's total deaths. A rank is applied. |
 
+Project-Specific Risks:
+
+1. An event is lost or duplicated when the fact joins to the dimensions.
+    - Planned Check: count repeated event_ids, count fact rows where state_key, hazard_key, or date_key has no match in its dimension after creating the fact_storm_event table.
+    - Expected results: 0 repeated IDs and 0 unmatched keys for each dimension
+    - Where it will run: Within the curated layer after step 3 of the prelim run order.
+  
+2. The summed values (or shares of each value) are not the state's real total.
+    - Planned check: for each state and measure, confirm that the hazard shares up to 100% and summing of deaths, injuries, etc. equal the fact totals for the 10 year period.
+    - Expected results: Shares should equal 100%, and serving totals equal fact totals for each measure.
+    - Where it will run: Within the serving layer after 4 of the prelim run order.
+
 
 #### 4. Diagnose and revise the plan
