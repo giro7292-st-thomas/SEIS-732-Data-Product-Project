@@ -168,10 +168,9 @@ Sensitivity of Traced Field: `deaths_direct` is public information and low-risk.
 
 Largest Remaining Limitation:
 
+
+
 First Concrete P2 Build Step:
-
-
-#### 4. Diagnose and revise the plan
 
 Create a view of the raw data in my project and confirm the row count of 881,554.
 ```
@@ -183,3 +182,9 @@ WHERE _TABLE_SUFFIX BETWEEN '2016' AND '2025';
 SELECT COUNT(*) AS raw_rows
 FROM `peppy-castle-507918-u6.storm_risk_raw.raw_storm_events`;
 ```
+
+#### 4. Diagnose and revise the plan
+
+During the in class review, the concern of too many different storm types was brought up as many of the unique values sound similar. This is where the idea of storm grouping started, which should work well for testing out how to manage history.
+
+AI Disclaimer: AI was used to write the SQL checks for the source profile, manage the syntax for GitHub formatting, and conversion/enhancement of the ER Diagram from what I described to a mermaid code block. GitHub syntax was verified by committing, reviewing the appearance, and adjusting as necessary. SQL checks were emulated in Excel as the dataset(s) are not too large to confirm quantities, null values, and unique values.
