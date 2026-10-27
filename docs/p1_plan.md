@@ -145,7 +145,7 @@ Preliminary Run Order:
 
 Trace of One Measure: `deaths_direct`
 
-| Stage | Object | Form of `deaths_direct` | Transformation |
+| Stage | Object | Form | Transformation |
 |:------|:-------|:------------------------|:---------------|
 | Source | `storms_*` | Deaths for one event. Repeated for each of the location rows | None |
 | Raw | `raw_storm_events` | Same as source. | None |
