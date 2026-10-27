@@ -163,6 +163,23 @@ Project-Specific Risks:
     - Planned check: for each state and measure, confirm that the hazard shares up to 100% and summing of deaths, injuries, etc. equal the fact totals for the 10 year period.
     - Expected results: Shares should equal 100%, and serving totals equal fact totals for each measure.
     - Where it will run: Within the serving layer after 4 of the prelim run order.
+  
+Sensitivity of Traced Field: `deaths_direct` is public information and low-risk. The dataset does not contain names, personal details, or age, therefore no exclusion or restricted access is needed. The intended users are state hazard mitigation planners, NOAA owns the data and I am acting as the data steward for the curated and serving tables. `deaths_direct` will appear in the audience output as intended.
+
+Largest Remaining Limitation:
+
+First Concrete P2 Build Step:
 
 
 #### 4. Diagnose and revise the plan
+
+Create a view of the raw data in my project and confirm the row count of 881,554.
+```
+CREATE OR REPLACE VIEW `peppy-castle-507918-u6.storm_risk_raw.raw_storm_events` AS
+SELECT *, _TABLE_SUFFIX AS source_year
+FROM `bigquery-public-data.noaa_historic_severe_storms.storms_*`
+WHERE _TABLE_SUFFIX BETWEEN '2016' AND '2025';
+
+SELECT COUNT(*) AS raw_rows
+FROM `peppy-castle-507918-u6.storm_risk_raw.raw_storm_events`;
+```
