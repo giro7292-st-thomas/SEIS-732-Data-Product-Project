@@ -46,11 +46,24 @@ Focused Source Profile:
 | 2025 | 93,203 | 72,360 | 20,843 |
 | **All years** | **881,554** | **653,920** | **227,634** |
 
+Checks
+| Check | Description | Expected | Observed | Conclusion |
+|:------|:------------|---------:|---------:|:-----------|
+| 1 | Source rows (2016–2025) | 881,554 | 881,554 | Matches the P0 row count. |
+| 2 | Source rows missing `event_id` | 0 | 0 | Every row has the proposed fact identifier. |
+| 3 | Source rows missing `location_index` | 0 | 320,247 | Unexpected. Check 3a was added to explain it. |
+| 3a | Events mixing missing and present `location_index` | 0 | 0 | Every row with a missing `location_index` is the only row for its event, so a null means a single-location event, not a data defect. |
+| 4 | Source rows missing `state_fips_code` | 0 | 0 | The state key is fully populated. |
+| 5 | Source rows missing `event_type` | 0 | 0 | The hazard label is fully populated. |
+| 6 | Repeated (`event_id`, `location_index`) groups | 0 | 0 | The source grain is one row per event location. |
+| 7 | Repeated `event_id` groups in source | > 0 | 83,379 | 83,379 events span multiple location rows, so a selection rule is needed before summing measures. |
+| 8 | Fact rows vs. distinct source events | 653,920 | 653,920 | The selection rule produces one row per `event_id`. |
+
 Conclusion:
 
 The fact grain is one row per storm event, identified by `event_id`; one hazard type in one county, forecast zone, or marine zone within one state, with its deaths, injuries, and damage recorded once.
 
-The source tables are stored with one row per location point, so the fact is built with a selection rule that keeps one row per `event_id`. The fact grain is confirmed by Check 7, showing the fact contains 653,920 rows that matches the 653,920 distinct events of the source. Since casualties and damage are recorded to the hazard and county where they happened, summing fact rows by `state_fips_code` and `event_type` will result in each state's impact by hazard type while avoiding duplicate counting across counties, states, or hazard types.
+The source tables are stored with one row per location point, so the fact is built with a selection rule that keeps one row per `event_id`. The fact grain is confirmed by Check 8, showing the fact contains 653,920 rows that matches the 653,920 distinct events of the source. Since casualties and damage are recorded to the hazard and county where they happened, summing fact rows by `state_fips_code` and `event_type` will result in each state's impact by hazard type while avoiding duplicate counting across counties, states, or hazard types.
 
 #### 2. Define the model and predict a history consequence
 
