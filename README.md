@@ -12,3 +12,14 @@ https://github.com/giro7292-st-thomas/SEIS-732-Data-Product-Project/blob/main/ev
 
 ##### 00_feasibility
 https://github.com/giro7292-st-thomas/SEIS-732-Data-Product-Project/blob/main/sql/00_feasibility.sql
+
+### P1
+
+#### p1-plan
+https://github.com/giro7292-st-thomas/SEIS-732-Data-Product-Project/blob/main/docs/p1-plan.md
+
+#### model.png
+https://github.com/giro7292-st-thomas/SEIS-732-Data-Product-Project/blob/main/docs/model.png
+
+### 01_source_profile
+https://github.com/giro7292-st-thomas/SEIS-732-Data-Product-Project/blob/main/sql/01_source_profile.sql
