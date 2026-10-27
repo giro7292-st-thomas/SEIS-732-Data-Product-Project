@@ -4,7 +4,7 @@ Audience and Need: This project is targeted for hazard mitigation planners at st
 
 Primary Question: Which hazard types account for the largest share of reported deaths and injuries, and the largest share of property and crop damage, in each state over the last 10 years?
 
-P0 Changes: I am dropping Q3, 'How does a state’s reported loss (per-capita) for a given hazard compare with a set of peer states?', per feedback, and focusing on Q1 (above).
+P0 Changes: I am dropping Q3, 'How does a state’s reported loss (per-capita) for a given hazard compare with a set of peer states?', per feedback, and focusing on Q1 as the primary question (above).
 
 Source objects project and dataset: bigquery-public-data | noaa_historic_severe_storms
 
@@ -54,7 +54,7 @@ The source tables are stored with one row per location point, so the fact is bui
 
 #### 2. Define the model and predict a history consequence
 
-Business Process: Storm event reporting from the NOAA where significant weather events are recorded along with the number of deaths, injuries, and damage that the event caused.
+Business Process: Storm event reporting from the NOAA departmenr where significant weather events are recorded along with the number of deaths, injuries, and damage that the event caused.
 
 Fact-table Type: Transaction fact table. Each row is one recorded event, and every measure is additive across hazard, place, and time.
 
@@ -66,14 +66,14 @@ Consequential Modelling Choice: By choosing event-grain, and not location-point 
 erDiagram
     DIM_DATE ||--o{ FACT_STORM_EVENT : "event begin date"
     DIM_STATE ||--o{ FACT_STORM_EVENT : "occurs in"
-    DIM_HAZARD ||--o{ FACT_STORM_EVENT : "classified as"
+    HAZARD_MAP ||--o{ FACT_STORM_EVENT : "groups event_type (current row)"
 
     FACT_STORM_EVENT {
         string event_id PK "NOAA source ID; degenerate dimension"
         string episode_id "NOAA source ID; degenerate dimension"
         int date_key FK "YYYYMMDD of event begin date"
         string state_key FK "State FIPS code"
-        int hazard_key FK "Warehouse surrogate key"
+        string event_type "NOAA source label, normalized"
         string cz_type "C county, Z zone, or M marine"
         string cz_fips_code "County or zone code"
         int deaths_direct "Additive measure"
@@ -82,6 +82,7 @@ erDiagram
         int injuries_indirect "Additive measure"
         numeric damage_property "Additive measure, USD"
         numeric damage_crops "Additive measure, USD"
+        date load_date "Restated on each reload"
     }
 
     DIM_DATE {
@@ -98,10 +99,13 @@ erDiagram
         string state_abbr
     }
 
-    DIM_HAZARD {
-        int hazard_key PK "Warehouse surrogate key"
-        string event_type
-        string event_group "OPTIONAL: My own grouping interpretation, ex: heavy snow and lake-effect snow"
+    HAZARD_MAP {
+        int map_key PK "Warehouse key; one version of a label's grouping"
+        string event_type "Source key; can repeat across versions"
+        string event_group "My own grouping, ex: heavy snow and lake-effect snow"
+        date valid_from "Compared to event begin date"
+        date valid_to
+        boolean is_current
     }
 ```
 
