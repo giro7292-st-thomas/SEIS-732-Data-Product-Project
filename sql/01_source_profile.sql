@@ -78,21 +78,25 @@ FROM (
   HAVING COUNT(*) > 1
 );
 
--- Check 8: Fact rows match distinct source events
--- Confirms the fact grain: one row per event_id. Both numbers should equal 653,920.
-WITH src AS (
-  SELECT *
+-- Check 8: Events whose measures or key attributes vary across location rows
+-- Tests the selection rule: if 0, keeping one row per event_id loses no information.
+SELECT
+  'Events with varying values across location rows' AS check_name,
+  0 AS expected,
+  COUNT(*) AS observed
+FROM (
+  SELECT event_id
   FROM `bigquery-public-data.noaa_historic_severe_storms.storms_*`
   WHERE _TABLE_SUFFIX BETWEEN '2016' AND '2025'
-),
-fact AS (
-  SELECT * EXCEPT(rn)
-  FROM (
-    SELECT *, ROW_NUMBER() OVER (PARTITION BY event_id ORDER BY location_index) AS rn
-    FROM src
-  )
-  WHERE rn = 1
-)
-SELECT
-  (SELECT COUNT(DISTINCT event_id) FROM src) AS distinct_source_events,
-  (SELECT COUNT(*) FROM fact) AS fact_rows;
+  GROUP BY event_id
+  HAVING COUNT(DISTINCT deaths_direct) > 1
+      OR COUNT(DISTINCT deaths_indirect) > 1
+      OR COUNT(DISTINCT injuries_direct) > 1
+      OR COUNT(DISTINCT injuries_indirect) > 1
+      OR COUNT(DISTINCT damage_property) > 1
+      OR COUNT(DISTINCT damage_crops) > 1
+      OR COUNT(DISTINCT event_type) > 1
+      OR COUNT(DISTINCT state_fips_code) > 1
+      OR COUNT(DISTINCT cz_fips_code) > 1
+      OR COUNT(DISTINCT event_begin_time) > 1
+);
