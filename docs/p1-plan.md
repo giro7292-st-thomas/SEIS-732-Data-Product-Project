@@ -27,7 +27,7 @@ Source Size and Date Coverage:
 | 2025 | 93,203 | 2025-01-01 00:00 | 2025-12-31 23:40 | 18.4 |
 | **All years** | **881,554** | **2016-01-01 00:00** | **2025-12-31 23:40** | **179.8** |
 
-Candidate Identifiers: `event_id` combined with `location_index` uniquely identifies each source row. `event_id'  will be the key once the data is deduplicated to one row per event. The output is grouped by `state_key` and `event_group` from the current hazard map row.
+Candidate Identifiers: `event_id` combined with `location_index` identifies each unique source row. `event_id`  will be the key once the data is deduplicated to one row per event. The output is grouped by `state_key` and `event_group` from the current hazard map row.
 
 Data Issue or Restriction: Deaths, injuries, and damage are repeated for events with multiple location rows. Summing these facts from the source table would be an artificial inflation. Deduplicating to one row per `event_id` before aggregating fixes this. Also, `state` is ambiguous ("Ar" could be Arizona or Arkansas), so `state_fips_code` is used as the state key.
 
@@ -52,7 +52,7 @@ Checks
 | 1 | Source rows (2016–2025) | 881,554 | 881,554 | Matches the P0 row count. |
 | 2 | Source rows missing `event_id` | 0 | 0 | Every row has the proposed fact identifier. |
 | 3 | Source rows missing `location_index` | 0 | 320,247 | Unexpected. Check 3a was added to explain it. |
-| 3a | Events mixing missing and present `location_index` | 0 | 0 | Every row with a missing `location_index` is the only row for its event, so a null means a single-location event, not a data defect. |
+| 3a | Events mixing missing and present `location_index` | 0 | 0 | Every row with a missing `location_index` is the only row for its event, so a null means a single-location event. |
 | 4 | Source rows missing `state_fips_code` | 0 | 0 | The state key is fully populated. |
 | 5 | Source rows missing `event_type` | 0 | 0 | The hazard label is fully populated. |
 | 6 | Repeated (`event_id`, `location_index`) groups | 0 | 0 | The source grain is one row per event location. |
@@ -130,7 +130,7 @@ History Decision:
 
 `event_type` is the attribute that is most likely to change (or be reclassified); NOAA may change spelling, naming, split a hazard into two type, or group hazards together overtime as climate change shifts standard hazard behaviors and classifications. Instead of overwriting labels, each NOAA label is kept as recorded on the fact and a `hazard_map` lookup table assigns each label to an event group, which implements Type 2 history. The `event_type` is the source key, `map_key` is the warehouse key that identifies a verion of the label's grouping. If a label is changed, such as `lake-effect snow` becoming `lake effect snow`, a new row is added that maps the new label to the same group of `Snow`. If a label moves to a different grouping, the old row is closed via an end date and a new row is added to the new group with a start date. As far as impacts on the primary analytical question, a rename (keeping the label in the same group) will not have an effect. If a label is regrouped, such as `heat-related` moving to the `Heat` group, the deaths, injuries, and damage for all 10 years would join that group and potentially move the group ranking higher. The results will be reported using the current mapping
 
-The small behavior I can test by P3 confirming each event type label matches exactly one hazard mapping grouping `is_current` row (ex: `lake-effect snow' should not be mapped to `Snow` and `Winter Hazards`).
+The small behavior I can test by P3 confirming each event type label matches exactly one hazard mapping grouping `is_current` row (ex: `lake-effect snow` should not be mapped to `Snow` and `Winter Hazards`).
 
 #### 3. Plan the build and its checks
 
