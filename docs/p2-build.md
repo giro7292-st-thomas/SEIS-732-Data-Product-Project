@@ -13,7 +13,7 @@ Raw input and preservation:
 The raw table that I am creating keep every source column and row preserved. As a result, this includes repeated event quantities on each location row; raw does not deduplicate or filter any data. Two fields are added, `source_year` and `loaded_at` which help as multiple years worth of data are combined into a single table and adds metadata as to when the Source->Raw ingestion was ran.
 
 Last Run: 2026-11-09 00:44:53.245406 UTC
-Rows in Raw: 881,554
+Rows in Raw: 881,554 (P1 expectation: 881,554)
 One raw row is equal to one location of one NOAA storm event as identified by `event_id` and `location_index`. As identified in P1, a missing location_index indicates an event with a single location.
 
 Reproducibility limits: The public dataset appears to not have any indication of versioning for if/when storm event measures are modified.
