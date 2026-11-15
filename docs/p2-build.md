@@ -1,6 +1,6 @@
 #### 1. Establish the input and run ingestion
 
-Audience, primary analytical question, and changes from P1: This project is targeted for hazard mitigation planners at state emergency management agencies who develop and maintain mitigations plans by deciding which hazards to prioritize for mitigation funding. Which hazard types account for the largest share of reported deaths and injuries, and the largest share of property and crop damage, in each state over the last 10 years? No changes to P1 source or grain.
+Audience, primary analytical question, and changes from P1: This project is targeted for hazard mitigation planners at state emergency management agencies who develop and maintain mitigations plans by deciding which hazards to prioritize for mitigation funding. Which hazard types account for the largest share of reported deaths and injuries, and the largest share of property and crop damage, in each state over the last 10 years? Changes to P1 - Raw changed from a view to a table, so the input is a fixed copy that later steps will compare against.
 
 Source Data:
 
@@ -13,6 +13,8 @@ Raw input and preservation:
 The raw table that I am creating keep every source column and row preserved. As a result, this includes repeated event quantities on each location row; raw does not deduplicate or filter any data. Two fields are added, `source_year` and `loaded_at` which help as multiple years worth of data are combined into a single table and adds metadata as to when the Source->Raw ingestion was ran.
 
 Last Run: 2026-11-09 00:44:53.245406 UTC
+
+Build info: Project `peppy-castle-507918-u6`, location `US`
 
 Rows in Raw: 881,554 (P1 expectation: 881,554)
 
@@ -54,17 +56,21 @@ Trace of One Measure: `deaths_direct`
 | Curated | `storm_risk_curated.fact_storm_event.deaths_direct` | Selection rule: `ROW_NUMBER() OVER (PARTITION BY event_id ...)`, keep `rn = 1` | 7,293 |
 | Serving (**planned, P3**) | `srv_state_hazard_shares` | Sum by `state_key` and `event_group`, divide by the state total, rank within state | Not yet built |
 
-The Raw total counts a multi-location event's deaths once per location row. The Curated total equals the sum taken once per event. The selection rule removes the inflation of deaths without losing any. The planned Serving table will use the Curated value to rank each state's hazard groups by share of direct deaths.
-
+The Raw total counts a multi-location event's deaths once per location row. The Curated total equals the sum taken once per event. The selection rule removes the inflation of deaths without losing any. The planned Serving table will use the Curated value to rank each state's hazard groups by share of direct deaths. Ranking hazards within a state will only be correct if each event is counted only once and keeps its state, date, and hazard grouping.
 
 #### 3. Run and interpret two acceptance checks
 
 | Risk and affected result | Check code | Expected result and why | Observed result | Interpretation or action |
 |:-------------------------|:-----------|:------------------------|:----------------|:-------------------------|
-| **Curated grain and relationships.** An event is lost or duplicated when the fact is built and joined, or has no hazard group. This would inflate or drop deaths, injuries, and damage in a states hazard ranking. | `sql/04_acceptance.sql`, Check 1 | `total_violations = 0`: no repeated `event_id`, every Raw event is present in the fact, and every `date_key`, `state_key`, and `hazard_key` matches to its dimension `event_group`. A violation indicates a row is miscounted or excluded from the state and hazard totals. | repeated: 0, missing: 0, date: 0, state: 0, hazard: 0, total: 0 | Every event_id still identifies exactly one Curated row. Every event in Raw was ingested into the fact with a matching date, state and hazard group, so no event is lost or double-counted. |
+| **Curated grain and relationships.** An event is lost or duplicated when the fact is built and joined, or has no hazard group. This would inflate or drop deaths, injuries, and damage in a states hazard ranking. | `sql/04_acceptance.sql`, Check 1 | 0 in every column. No repeated `event_id`, every Raw event is present in the fact, every date_key, state_key, and hazard_key matches its dimension, and every hazard has an event_group. A violation indicates a row is miscounted or excluded from the state and hazard totals. | repeated: 0, missing: 0, date: 0, state: 0, hazard: 0 | Every event_id still identifies exactly one Curated row. Every event in Raw was ingested into the fact with a matching date, state and hazard group, so no event is lost or double-counted. |
 | **Row meaning for the audience result.** A Curated row may not represent its event's true impact for its state. This would make the planned state totals and hazard shares wrong. Revised from P1 Risk 2: shares-sum-to-100% moves to P3 once Serving exists. | `sql/04_acceptance.sql`, Check 2 | `mismatched_states = 0`. Each state's fact total should equal an independent Raw total that counts each `event_id` once. | states: 69, mismatched: 0 | All 69 FIPS codes Curated totals for each measure match an independent once-per-event total from Raw. Each fact row carries its own measures for the right state, and state totals built from the fact can be trusted in Serving. |
 
 #### 4. Make the run reproducible and record the next step
+
+**Prerequisites (must exist before step 1):**
+- A Google Cloud project with BigQuery enabled and billing (`peppy-castle-507918-u6`), processing location `US`
+- Read access to `bigquery-public-data.noaa_historic_severe_storms.storms_2016` through `storms_2025`
+- Read access to `bigquery-public-data.geo_us_boundaries.states` (used by `dim_state`) for FIPS
 
 1. **Create the Raw dataset.** [`02_ingest.sql`](https://github.com/giro7292-st-thomas/SEIS-732-Data-Product-Project/blob/main/sql/02_ingest.sql), step 1
    - Creates `storm_risk_raw` if it is not already there. No change if it already exists.
