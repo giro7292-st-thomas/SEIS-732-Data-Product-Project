@@ -1,4 +1,4 @@
--- 1. Dataset (location must match the public dataset)
+-- 1. Create the dataset.
 CREATE SCHEMA IF NOT EXISTS `peppy-castle-507918-u6.storm_risk_raw`
 OPTIONS (location = 'US');
 
