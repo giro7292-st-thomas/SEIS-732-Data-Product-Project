@@ -12,11 +12,27 @@ Raw input and preservation:
 
 The raw table that I am creating keep every source column and row preserved. As a result, this includes repeated event quantities on each location row; raw does not deduplicate or filter any data. Two fields are added, `source_year` and `loaded_at` which help as multiple years worth of data are combined into a single table and adds metadata as to when the Source->Raw ingestion was ran.
 
-Last Run: 2026-11-09 00:44:53.245406 UTC
+Last Run: 2026-11-15 22:01:25.797519 UTC
 
 Build info: Project `peppy-castle-507918-u6`, location `US`
 
 Rows in Raw: 881,554 (P1 expectation: 881,554)
+
+Source version (recorded 2026-11-15, before the load):
+
+| Table | Created | Last modified | Rows | Size (bytes) |
+|:------|:--------|:--------------|-----:|-------------:|
+| `storms_2016` | 2019-07-25 12:42 UTC | 2026-11-15 04:51 UTC | 77,291 | 17,217,034 |
+| `storms_2017` | 2019-08-13 14:01 UTC | 2026-11-15 04:52 UTC | 81,655 | 18,452,764 |
+| `storms_2018` | 2019-03-29 17:09 UTC | 2026-11-15 04:53 UTC | 97,931 | 21,759,859 |
+| `storms_2019` | 2019-08-14 17:02 UTC | 2026-11-15 04:54 UTC | 102,613 | 22,853,806 |
+| `storms_2020` | 2020-07-06 19:51 UTC | 2026-11-15 04:54 UTC | 85,232 | 18,995,611 |
+| `storms_2021` | 2021-01-27 10:55 UTC | 2026-11-15 04:55 UTC | 83,083 | 17,747,848 |
+| `storms_2022` | 2022-10-13 22:37 UTC | 2026-11-15 04:56 UTC | 83,338 | 16,713,887 |
+| `storms_2023` | 2023-04-23 15:40 UTC | 2026-11-15 04:57 UTC | 91,312 | 18,288,719 |
+| `storms_2024` | 2024-04-19 03:13 UTC | 2026-11-15 04:58 UTC | 85,896 | 17,315,725 |
+| `storms_2025` | 2025-05-14 04:05 UTC | 2026-11-15 04:58 UTC | 93,203 | 19,249,849 |
+| **All years** | | | **881,554** | **188,595,102** |
 
 One raw row is equal to one location of one NOAA storm event as identified by `event_id` and `location_index`. As identified in P1, a missing location_index indicates an event with a single location.
 
@@ -66,6 +82,8 @@ The Raw total counts a multi-location event's deaths once per location row. The 
 | **Row meaning for the audience result.** A Curated row may not represent its event's true impact for its state. This would make the planned state totals and hazard shares wrong. Revised from P1 Risk 2: shares-sum-to-100% moves to P3 once Serving exists. | `sql/04_acceptance.sql`, Check 2 | `mismatched_states = 0`. Each state's fact total should equal an independent Raw total that counts each `event_id` once. | states: 69, mismatched: 0 | All 69 FIPS codes Curated totals for each measure match an independent once-per-event total from Raw. Each fact row carries its own measures for the right state, and state totals built from the fact can be trusted in Serving. |
 
 #### 4. Make the run reproducible and record the next step
+
+These steps were run in this order on 2026-11-15; the saved results (881,554 Raw rows, 653,920 Curated rows, 0 violations in Check 1, 0 mismatched states in Check 2) are the comparison values.
 
 **Prerequisites (must exist before step 1):**
 - A Google Cloud project with BigQuery enabled and billing (`peppy-castle-507918-u6`), processing location `US`
