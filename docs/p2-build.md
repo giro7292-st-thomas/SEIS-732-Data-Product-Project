@@ -33,6 +33,19 @@ See `03_curate.sql` for building curated tables.
 | `hazard_map` | One version of an `event_type` label's grouping | `map_key`; one `is_current` row per `event_type` | 54 |
 | `fact_storm_event` | One NOAA storm event: one hazard type in one county/zone, starting at one time | `event_id` | 653,920 |
 
+Rules applied:
+- Repeated rows (selection rule): Raw has one row per event location, so a multi-location event repeats counts and dollars of deaths, injuries, and damage on every row. The fact keeps one row per `event_id`.
+- Non-state FIPS: NOAA uses FIPS codes for marine zones and other areas that are not a U.S state. These codes are added to `dim_state` as `OTHER` rather than being dropped, so every fact row keeps a valid state key. The audience output will filter to `STATE` and `DC` (`dim_state`).
+- Relationships: The fact table joins to current hazard mapping on `event_type`. `hazard_map` has one current row per label, so the join will not add rows. Unmapped labels still show up as a null `hazard_key` instead of the event being dropped from the LEFT JOIN.
+
+| Step | Rows | How it is derived |
+|:-----|-----:|:------------------|
+| Raw input | 881,554 | All location rows, 2016–2025 |
+| Rows from multi-location events | 311,013 | 83,379 events with more than one location row |
+| Rows removed by the selection rule | 227,634 | 311,013 − 83,379 (one row kept per event) |
+| Curated fact | 653,920 | 881,554 − 227,634; equals distinct `event_id` |
+
+
 #### 3. Run and interpret two acceptance checks
 
 #### 4. Make the run reproducible and record the next step
