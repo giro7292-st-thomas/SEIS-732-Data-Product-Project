@@ -45,6 +45,17 @@ Rules applied:
 | Rows removed by the selection rule | 227,634 | 311,013 − 83,379 (one row kept per event) |
 | Curated fact | 653,920 | 881,554 − 227,634; equals distinct `event_id` |
 
+Trace of One Measure: `deaths_direct`
+
+| Stage | Object and field | Rule | Observed |
+|:------|:-----------------|:-----|---------:|
+| Source | `bigquery-public-data.noaa_historic_severe_storms.storms_*.deaths_direct` | None | — |
+| Raw | `storm_risk_raw.raw_storm_events.deaths_direct` | Copied unchanged | 11,305 |
+| Curated | `storm_risk_curated.fact_storm_event.deaths_direct` | Selection rule: `ROW_NUMBER() OVER (PARTITION BY event_id ...)`, keep `rn = 1` | 7,293 |
+| Serving (**planned, P3**) | `srv_state_hazard_shares` | Sum by `state_key` and `event_group`, divide by the state total, rank within state | Not yet built |
+
+The Raw total counts a multi-location event's deaths once per location row. The Curated total equals the sum taken once per event. The selection rule removes the inflation of deaths without losing any. The planned Serving table will use the Curated value to rank each state's hazard groups by share of direct deaths.
+
 
 #### 3. Run and interpret two acceptance checks
 
