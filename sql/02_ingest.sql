@@ -30,3 +30,11 @@ SELECT
   CURRENT_TIMESTAMP() AS loaded_at
 FROM `bigquery-public-data.noaa_historic_severe_storms.storms_*`
 WHERE _TABLE_SUFFIX BETWEEN '2016' AND '2025';
+
+-- 5. Verify: total rows, date coverage, load time
+SELECT
+  COUNT(*)              AS raw_rows,
+  MIN(event_begin_time) AS first_event,
+  MAX(event_begin_time) AS last_event,
+  MAX(loaded_at)        AS loaded_at
+FROM `peppy-castle-507918-u6.storm_risk_raw.raw_storm_events`;
