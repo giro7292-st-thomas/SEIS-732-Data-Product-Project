@@ -20,7 +20,7 @@ WHERE REGEXP_CONTAINS(table_name, r'^storms_(201[6-9]|202[0-5])$')
 GROUP BY column_name, data_type
 HAVING tables_with_column < 10;
 
--- 4. Load Raw (point-in-time copy)
+-- 4. Load Raw (point-in-time copy) storm tables into a single project table.
 CREATE OR REPLACE TABLE `peppy-castle-507918-u6.storm_risk_raw.raw_storm_events`
 OPTIONS (description = 'Unmodified copy of NOAA storms_2016-2025 (one row per event location) plus source_year and loaded_at lineage columns.')
 AS
