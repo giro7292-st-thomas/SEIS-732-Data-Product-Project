@@ -191,3 +191,13 @@ SELECT
 FROM one_per_event e
 LEFT JOIN `peppy-castle-507918-u6.storm_risk_curated.hazard_map` h
   ON e.event_type = h.event_type AND h.is_current;
+
+-- Validation
+
+-- V1. Row counts: Raw vs Curated fact vs distinct events in Raw
+--     Expect fact_rows = distinct_raw_events = 653,920
+SELECT
+  (SELECT COUNT(*) FROM `peppy-castle-507918-u6.storm_risk_raw.raw_storm_events`)                 AS raw_rows,
+  (SELECT COUNT(DISTINCT event_id) FROM `peppy-castle-507918-u6.storm_risk_raw.raw_storm_events`) AS distinct_raw_events,
+  (SELECT COUNT(*) FROM `peppy-castle-507918-u6.storm_risk_curated.fact_storm_event`)             AS fact_rows,
+  (SELECT COUNT(DISTINCT event_id) FROM `peppy-castle-507918-u6.storm_risk_curated.fact_storm_event`) AS fact_distinct_events;
