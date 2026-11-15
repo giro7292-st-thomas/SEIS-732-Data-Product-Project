@@ -201,3 +201,14 @@ SELECT
   (SELECT COUNT(DISTINCT event_id) FROM `peppy-castle-507918-u6.storm_risk_raw.raw_storm_events`) AS distinct_raw_events,
   (SELECT COUNT(*) FROM `peppy-castle-507918-u6.storm_risk_curated.fact_storm_event`)             AS fact_rows,
   (SELECT COUNT(DISTINCT event_id) FROM `peppy-castle-507918-u6.storm_risk_curated.fact_storm_event`) AS fact_distinct_events;
+
+-- V2. Rows removed by the selection rule (expect 83,379 events, 311,013 rows, 227,634 removed)
+SELECT COUNT(*) AS multi_location_events, SUM(n) AS raw_rows_in_those_events, SUM(n - 1) AS rows_removed
+FROM (SELECT event_id, COUNT(*) AS n
+      FROM `peppy-castle-507918-u6.storm_risk_raw.raw_storm_events`
+      GROUP BY event_id HAVING COUNT(*) > 1);
+
+-- V3. Trace: deaths_direct in Raw (all rows) vs Curated (one per event)
+SELECT
+  (SELECT SUM(deaths_direct) FROM `peppy-castle-507918-u6.storm_risk_raw.raw_storm_events`)      AS raw_sum,
+  (SELECT SUM(deaths_direct) FROM `peppy-castle-507918-u6.storm_risk_curated.fact_storm_event`)  AS fact_sum;
