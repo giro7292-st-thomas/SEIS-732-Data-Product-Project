@@ -24,6 +24,15 @@ See `02_ingest.sql` for running ingestion.
 
 #### 2. Build Curated at the intended grain
 
+See `03_curate.sql` for building curated tables.
+
+| Object | One row represents | Row identifier | Rows |
+|:-------|:-------------------|:---------------|-----:|
+| `dim_date` | One calendar date, 2016-01-01 to 2025-12-31 | `date_key` (YYYYMMDD) | 3,653 |
+| `dim_state` | One state, DC, territory, or NOAA marine/other FIPS code | `state_key` (2-digit FIPS) | 74 |
+| `hazard_map` | One version of an `event_type` label's grouping | `map_key`; one `is_current` row per `event_type` | 54 |
+| `fact_storm_event` | One NOAA storm event: one hazard type in one county/zone, starting at one time | `event_id` | 653,920 |
+
 #### 3. Run and interpret two acceptance checks
 
 #### 4. Make the run reproducible and record the next step
