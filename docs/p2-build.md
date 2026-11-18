@@ -58,7 +58,7 @@ Rules applied:
 
 | Step | Rows | How it is derived |
 |:-----|-----:|:------------------|
-| Raw input | 881,554 | All location rows, 2016–2025 |
+| Raw input | 881,554 | All location rows combined from each source table, 2016–2025 |
 | Rows from multi-location events | 311,013 | 83,379 events with more than one location row |
 | Rows removed by the selection rule | 227,634 | 311,013 − 83,379 (one row kept per event) |
 | Curated fact | 653,920 | 881,554 − 227,634; equals distinct `event_id` |
@@ -99,27 +99,27 @@ These steps were run in this order on 2026-11-15; the saved results (881,554 Raw
    - Read-only. Expect 0 rows.
 4. **Load Raw.** `02_ingest.sql`, step 4
    - Requires steps 1–3.
-   - **Replaces** `raw_storm_events` and resets `loaded_at`.
+   - Replaces `raw_storm_events` and resets `loaded_at`.
    - **Save before a reload:** the previous `loaded_at` and row count. A reload overwrites the copy every later result was built from.
 5. **Verify Raw.** `02_ingest.sql`, step 5
    - Read-only. Expect 881,554 rows, events from 2016-01-01 to 2025-12-31.
    - **Save:** row count, first and last event, and `loaded_at`.
 6. **Create the Curated dataset and `dim_date`.** [`03_curate.sql`](https://github.com/giro7292-st-thomas/SEIS-732-Data-Product-Project/blob/main/sql/03_curate.sql), "Create dim_date"
-   - Creates `storm_risk_curated` if missing; **replaces** `dim_date`.
+   - Creates `storm_risk_curated` if missing; replaces `dim_date`.
 7. **Build and verify `dim_state`.** `03_curate.sql`, "Create dim_state" steps 1–3
-   - Requires step 4. **Replaces** `dim_state`.
+   - Requires step 4. Replaces `dim_state`.
    - **Save:** the verification counts and the list of `OTHER` codes.
 8. **Build `hazard_map`.** `03_curate.sql`, "Create hazard_map"
    - Requires step 4.
-   - **Replaces** `hazard_map`; `map_key` values are renumbered and any history rows are lost.
+   - Replaces `hazard_map`; `map_key` values are renumbered and any history rows are lost.
    - **Save:** any manually added history rows (none in this submittal).
 9. **Build `fact_storm_event`.** `03_curate.sql`, "Create fact_storm_event"
-   - Requires steps 4, 6, 7 and 8. **Replaces** `fact_storm_event` and resets `load_date`.
+   - Requires steps 4, 6, 7 and 8. Replaces `fact_storm_event` and resets `load_date`.
 10. **Validate Curated row counts.** `03_curate.sql`, "Validation" V1
     - Read-only. Expect `fact_rows` = `distinct_raw_events` = 653,920.
     - **Save:** all four counts.
 11. **Run the acceptance checks.** [`04_acceptance.sql`](https://github.com/giro7292-st-thomas/SEIS-732-Data-Product-Project/blob/main/sql/04_acceptance.sql), Checks 1 and 2
-    - Requires step 9. Read-only.
+    - Requires step 9 and is read-only.
     - **Save:** both results (Section 3 table).
 
 **Notes:**
