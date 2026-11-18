@@ -25,3 +25,15 @@ https://github.com/giro7292-st-thomas/SEIS-732-Data-Product-Project/blob/main/do
 https://github.com/giro7292-st-thomas/SEIS-732-Data-Product-Project/blob/main/sql/01_source_profile.sql
 
 ### P2
+
+#### p2-build
+https://github.com/giro7292-st-thomas/SEIS-732-Data-Product-Project/blob/main/docs/p2-build.md
+
+#### 02_ingest
+https://github.com/giro7292-st-thomas/SEIS-732-Data-Product-Project/blob/main/sql/02_ingest.sql
+
+#### 03_curate
+https://github.com/giro7292-st-thomas/SEIS-732-Data-Product-Project/blob/main/sql/03_curate.sql
+
+#### 04_acceptance
+https://github.com/giro7292-st-thomas/SEIS-732-Data-Product-Project/blob/main/sql/04_acceptance.sql
